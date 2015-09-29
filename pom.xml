@@ -49,6 +49,7 @@
     <properties>
         <gson-utils.version>1.0.0-SNAPSHOT</gson-utils.version>
         <spring.version>4.1.4.RELEASE</spring.version>
+        <slf4j.version>1.7.10</slf4j.version>
 
         <!-- Project Settings -->
         <maven.compiler.source>1.7</maven.compiler.source>
@@ -207,16 +208,26 @@
 
             <dependency>
                 <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
-<!--
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
--->
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
 
             <dependency>

@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.aksw.gson.utils.JsonTransformerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanMetadataAttribute;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -256,6 +259,8 @@ public class ContextProcessorJsonUtils {
         return result;
     }
 
+    public static Pattern spelPattern = Pattern.compile("\\s*#\\{.*\\}\\s*", Pattern.DOTALL | Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+
     public static Object processAttr(JsonElement json, BeanDefinitionRegistry registry) throws Exception {
         Object result;
 
@@ -288,6 +293,16 @@ public class ContextProcessorJsonUtils {
 //            result = processAttrMap(obj);
         } else {
             result = JsonTransformerUtils.toJavaObject(json); //processBean(json);
+
+// SPEL handling is integrated into Spring - we don't have to do anything!
+//            if(result instanceof String) {
+//                String str = (String)result;
+//                Matcher m = spelPattern.matcher(str);
+//                boolean isSpelExprStr = m.matches();
+//                if(isSpelExprStr) {
+//                    result = new BeanMetadataAttribute("value", str);
+//                }
+//            }
         }
 
 //        else if(json.isJsonPrimitive()) {
@@ -447,7 +462,7 @@ public class ContextProcessorJsonUtils {
 // Function<JsonElement, Object> transformer
     public static BeanDefinition processBean(JsonObject json, BeanDefinitionRegistry registry) throws Exception {
 
-        BeanDefinition result = new GenericBeanDefinition();
+        GenericBeanDefinition result = new GenericBeanDefinition();
 
         // Process special attributes
         JsonElement _clazz = json.get(ATTR_TYPE);
@@ -503,9 +518,19 @@ public class ContextProcessorJsonUtils {
             JsonElement value = entry.getValue();
 
             Object obj = processAttr(value, registry);
+            //BeanMetadataAttributeAccessor
             MutablePropertyValues properties = result.getPropertyValues();
-            //result.setAttribute(key, obj);
-            properties.add(key, obj);
+
+            if(obj instanceof BeanMetadataAttribute) {
+                BeanMetadataAttribute metadata = (BeanMetadataAttribute)obj;
+                result.addMetadataAttribute(metadata);;
+//                String k = metadata.getName();
+//                Object v = metadata.getValue();
+//                result.setAttribute(k, v);
+            } else {
+                properties.add(key, obj);
+            }
+            //  result.setAttribute(key, obj);
             //result.getPropertyValues()
         }
 

@@ -11,7 +11,7 @@
 
     <name>Spring JSON - Parent</name>
     <description>Configure spring beans with JSON</description>
-    <url>hhttps://github.com/AKSW/spring-json-utils</url>
+    <url>https://github.com/AKSW/spring-json-utils</url>
 
     <modules>
         <module>spring-json-core</module>

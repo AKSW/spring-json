@@ -1,5 +1,6 @@
 package org.aksw.spring.json;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.aksw.gson.utils.JsonTransformerUtils;
@@ -16,10 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanMetadataAttribute;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
@@ -30,6 +32,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 
 
 /**
@@ -60,6 +63,7 @@ public class ContextProcessorJsonUtils {
     public static final String ATTR_REF = "ref";
     public static final String ATTR_TYPE = "type";
     public static final String ATTR_CTOR_ARGS = "ctor";
+    public static final String ATTR_QUALIFIER = "qualifier";
 
     public static final String ATTR_CONTEXT = "context";
 
@@ -74,6 +78,16 @@ public class ContextProcessorJsonUtils {
 
     public static void processContext(ApplicationContext ctx, JsonElement json) throws Exception {
         processContext(ctx, json.getAsJsonObject());
+    }
+
+
+    public static Entry<String, String> splitByQualifier(String str) {
+        int i = str.lastIndexOf(':');
+        String name = i == -1 ? str : str.substring(0, i).trim();
+        String qualifier = i == -1 ? "" : str.substring(i + 1).trim();
+
+        Entry<String, String> result = new AbstractMap.SimpleEntry<String, String>(name, qualifier);
+        return result;
     }
 
     public static void processContext(ApplicationContext ctx, JsonObject json) throws Exception {
@@ -497,13 +511,43 @@ public class ContextProcessorJsonUtils {
             }
         }
 
+        JsonElement _qualifier = json.get(ATTR_QUALIFIER);
+        if(_qualifier != null) {
+            Assert.isTrue(_qualifier.isJsonPrimitive());
+            JsonPrimitive p = _qualifier.getAsJsonPrimitive();
+            Assert.isTrue(p.isString());
+
+            // TODO Only string qualifiers are supported at present
+            String qualifier = p.getAsString();
+            //result.setAttribute("qualifier", qualifier);
+            //result.addQualifier(new AutowireCandidateQualifier(type));
+          AutowireCandidateQualifier q = new AutowireCandidateQualifier(Qualifier.class, qualifier);
+          result.addQualifier(q);
+
+
+            //String beanClassName = result.getBeanClassName();
+
+            // TODO Make classLoader configurable
+//            result.resolveBeanClass(ClassUtils.getDefaultClassLoader());
+//            Class<?> beanClass = result.getBeanClass();
+//            if(FactoryBean.class.isAssignableFrom(beanClass)) {
+//                FactoryBean<?> fb = (FactoryBean<?>)beanClass.newInstance();
+//                beanClass = fb.getObjectType();
+//            }
+//
+//            AutowireCandidateQualifier q = new AutowireCandidateQualifier(beanClass, qualifier);
+//            result.addQualifier(q);
+
+        }
+
+
         // Create a new map with special attributes removed
 //        Map<String, Object> tmp = json;
 //        json = new HashMap<String, Object>(tmp);
 //        json.remove(ATTR_TYPE);
 //        json.remove(ATTR_CTOR_ARGS);
 
-        Set<String> specialAttributes = new HashSet<String>(Arrays.<String>asList(ATTR_TYPE, ATTR_CTOR_ARGS));
+        Set<String> specialAttributes = new HashSet<String>(Arrays.<String>asList(ATTR_TYPE, ATTR_CTOR_ARGS, ATTR_QUALIFIER));
 
 
         // Default handling of attributes

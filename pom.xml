@@ -11,14 +11,14 @@
 
     <name>Spring JSON - Parent</name>
     <description>Configure spring beans with JSON</description>
-    <url>https://github.com/AKSW/spring-json-utils</url>
+    <url>https://github.com/AKSW/spring-json</url>
 
     <modules>
         <module>spring-json-core</module>
     </modules>
 
     <issueManagement>
-        <url>https://github.com/AKSW/gson-utils/issues</url>
+        <url>https://github.com/AKSW/spring-json/issues</url>
         <system>GitHub</system>
     </issueManagement>
 
@@ -31,9 +31,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/AKSW/gson-utils</url>
-        <connection>scm:git:git://github.com/AKSW/gson-utils.git</connection>
-        <developerConnection>scm:git:git@github.com:AKSW/gson-utils.git</developerConnection>
+        <url>https://github.com/AKSW/spring-json</url>
+        <connection>scm:git:git://github.com/AKSW/spring-json.git</connection>
+        <developerConnection>scm:git:git@github.com:AKSW/spring-json.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 

@@ -61,11 +61,18 @@ public class ContextProcessorJsonUtils {
     private static final Logger logger = LoggerFactory.getLogger(ContextProcessorJsonUtils.class);
 
     public static final String ATTR_REF = "ref";
-    public static final String ATTR_TYPE = "type";
+    public static final String ATTR_TYPE = "beanClassName";
     public static final String ATTR_CTOR_ARGS = "ctor";
     public static final String ATTR_QUALIFIER = "qualifier";
+    public static final String ATTR_SCOPE = "scope";
 
     public static final String ATTR_CONTEXT = "context";
+
+    public static final Set<String> specialAttributes;
+
+    static {
+        specialAttributes = new HashSet<String>(Arrays.<String>asList(ATTR_TYPE, ATTR_CTOR_ARGS, ATTR_QUALIFIER, ATTR_SCOPE));
+    }
 
     public void process() {
         MethodInvokingFactoryBean bean = new MethodInvokingFactoryBean();
@@ -511,6 +518,16 @@ public class ContextProcessorJsonUtils {
             }
         }
 
+
+        JsonElement _scope = json.get(ATTR_SCOPE);
+        if(_scope != null) {
+            Assert.isTrue(_scope.isJsonPrimitive());
+            JsonPrimitive p = _scope.getAsJsonPrimitive();
+            Assert.isTrue(p.isString());
+            String scope = p.getAsString();
+            result.setScope(scope);
+        }
+
         JsonElement _qualifier = json.get(ATTR_QUALIFIER);
         if(_qualifier != null) {
             Assert.isTrue(_qualifier.isJsonPrimitive());
@@ -547,37 +564,41 @@ public class ContextProcessorJsonUtils {
 //        json.remove(ATTR_TYPE);
 //        json.remove(ATTR_CTOR_ARGS);
 
-        Set<String> specialAttributes = new HashSet<String>(Arrays.<String>asList(ATTR_TYPE, ATTR_CTOR_ARGS, ATTR_QUALIFIER));
 
+        JsonElement _properties = json.get("properties");
+        if(_properties != null && !_properties.isJsonNull()) {
+            Assert.isTrue(_properties.isJsonObject());
 
-        // Default handling of attributes
-        for(Entry<String, JsonElement> entry : json.entrySet()) {
+            JsonObject properties = _properties.getAsJsonObject();
 
-            String key = entry.getKey();
+            // Default handling of attributes
+            for(Entry<String, JsonElement> entry : properties.entrySet()) {
 
-            if(specialAttributes.contains(key)) {
-                continue;
+                String key = entry.getKey();
+
+                if(specialAttributes.contains(key)) {
+                    continue;
+                }
+
+                JsonElement value = entry.getValue();
+
+                Object obj = processAttr(value, registry);
+                //BeanMetadataAttributeAccessor
+                MutablePropertyValues props = result.getPropertyValues();
+
+                if(obj instanceof BeanMetadataAttribute) {
+                    BeanMetadataAttribute metadata = (BeanMetadataAttribute)obj;
+                    result.addMetadataAttribute(metadata);;
+    //                String k = metadata.getName();
+    //                Object v = metadata.getValue();
+    //                result.setAttribute(k, v);
+                } else {
+                    props.add(key, obj);
+                }
+                //  result.setAttribute(key, obj);
+                //result.getPropertyValues()
             }
-
-            JsonElement value = entry.getValue();
-
-            Object obj = processAttr(value, registry);
-            //BeanMetadataAttributeAccessor
-            MutablePropertyValues properties = result.getPropertyValues();
-
-            if(obj instanceof BeanMetadataAttribute) {
-                BeanMetadataAttribute metadata = (BeanMetadataAttribute)obj;
-                result.addMetadataAttribute(metadata);;
-//                String k = metadata.getName();
-//                Object v = metadata.getValue();
-//                result.setAttribute(k, v);
-            } else {
-                properties.add(key, obj);
-            }
-            //  result.setAttribute(key, obj);
-            //result.getPropertyValues()
         }
-
 
         return result;
 

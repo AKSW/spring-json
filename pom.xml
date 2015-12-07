@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.aksw.spring</groupId>
     <artifactId>spring-json-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <name>Spring JSON - Parent</name>
     <description>Configure spring beans with JSON</description>
-    <url>https://github.com/AKSW/spring-json-utils</url>
+    <url>https://github.com/AKSW/spring-json</url>
 
     <modules>
         <module>spring-json-core</module>
     </modules>
 
     <issueManagement>
-        <url>https://github.com/AKSW/gson-utils/issues</url>
+        <url>https://github.com/AKSW/spring-json/issues</url>
         <system>GitHub</system>
     </issueManagement>
 
@@ -31,9 +30,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/AKSW/gson-utils</url>
-        <connection>scm:git:git://github.com/AKSW/gson-utils.git</connection>
-        <developerConnection>scm:git:git@github.com:AKSW/gson-utils.git</developerConnection>
+        <url>https://github.com/AKSW/spring-json</url>
+        <connection>scm:git:git://github.com/AKSW/spring-json.git</connection>
+        <developerConnection>scm:git:git@github.com:AKSW/spring-json.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -47,7 +46,7 @@
     </developers>
 
     <properties>
-        <gson-utils.version>1.0.0-SNAPSHOT</gson-utils.version>
+        <gson-utils.version>1.0.0</gson-utils.version>
         <spring.version>4.1.4.RELEASE</spring.version>
         <slf4j.version>1.7.10</slf4j.version>
 

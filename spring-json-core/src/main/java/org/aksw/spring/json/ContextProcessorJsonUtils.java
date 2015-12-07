@@ -80,7 +80,6 @@ public class ContextProcessorJsonUtils {
         processContext(ctx, json.getAsJsonObject());
     }
 
-
     public static Entry<String, String> splitByQualifier(String str) {
         int i = str.lastIndexOf(':');
         String name = i == -1 ? str : str.substring(0, i).trim();

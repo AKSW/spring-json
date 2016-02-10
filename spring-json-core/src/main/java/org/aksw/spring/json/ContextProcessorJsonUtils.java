@@ -14,19 +14,23 @@ import java.util.regex.Pattern;
 import org.aksw.gson.utils.JsonTransformerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.scope.ScopedProxyUtils;
 import org.springframework.beans.BeanMetadataAttribute;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AutowireCandidateQualifier;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -110,6 +114,8 @@ public class ContextProcessorJsonUtils {
             BeanDefinition beanDefinition = processBean(value, registry);
 
 //            AutowireCandidateQualifier.
+
+
 
             registry.registerBeanDefinition(beanName, beanDefinition);
         }
@@ -480,9 +486,11 @@ public class ContextProcessorJsonUtils {
 
 
 // Function<JsonElement, Object> transformer
+    //public static int proxyCounter = 0;
+
     public static BeanDefinition processBean(JsonObject json, BeanDefinitionRegistry registry) throws Exception {
 
-        GenericBeanDefinition result = new GenericBeanDefinition();
+        GenericBeanDefinition bd = new GenericBeanDefinition();
 
         // Process special attributes
         JsonElement _clazz = json.get(ATTR_TYPE);
@@ -492,7 +500,7 @@ public class ContextProcessorJsonUtils {
             Assert.isTrue(p.isString());
 
             String clazz = p.getAsString();
-            result.setBeanClassName(clazz);
+            bd.setBeanClassName(clazz);
         }
 
         // check for ctor args
@@ -508,7 +516,7 @@ public class ContextProcessorJsonUtils {
 
             List<?> args = processBeans(ctorArgs, registry);
 
-            ConstructorArgumentValues cav = result.getConstructorArgumentValues();
+            ConstructorArgumentValues cav = bd.getConstructorArgumentValues();
             for(Object arg : args) {
                 //cav.add
                 //ValueHolder holder = new ValueHolder(null);
@@ -524,7 +532,7 @@ public class ContextProcessorJsonUtils {
             JsonPrimitive p = _scope.getAsJsonPrimitive();
             Assert.isTrue(p.isString());
             String scope = p.getAsString();
-            result.setScope(scope);
+            bd.setScope(scope);
         }
 
         JsonElement _qualifier = json.get(ATTR_QUALIFIER);
@@ -538,7 +546,7 @@ public class ContextProcessorJsonUtils {
             //result.setAttribute("qualifier", qualifier);
             //result.addQualifier(new AutowireCandidateQualifier(type));
           AutowireCandidateQualifier q = new AutowireCandidateQualifier(Qualifier.class, qualifier);
-          result.addQualifier(q);
+          bd.addQualifier(q);
 
 
             //String beanClassName = result.getBeanClassName();
@@ -583,11 +591,11 @@ public class ContextProcessorJsonUtils {
 
                 Object obj = processAttr(value, registry);
                 //BeanMetadataAttributeAccessor
-                MutablePropertyValues props = result.getPropertyValues();
+                MutablePropertyValues props = bd.getPropertyValues();
 
                 if(obj instanceof BeanMetadataAttribute) {
                     BeanMetadataAttribute metadata = (BeanMetadataAttribute)obj;
-                    result.addMetadataAttribute(metadata);;
+                    bd.addMetadataAttribute(metadata);;
     //                String k = metadata.getName();
     //                Object v = metadata.getValue();
     //                result.setAttribute(k, v);
@@ -598,6 +606,20 @@ public class ContextProcessorJsonUtils {
                 //result.getPropertyValues()
             }
         }
+
+        BeanDefinition result;
+
+        if(!StringUtils.isEmpty(bd.getScope())) {
+            String proxiedBeanName = BeanDefinitionReaderUtils.registerWithGeneratedName(bd, registry);
+            BeanDefinitionHolder proxyHolder = ScopedProxyUtils.createScopedProxy(new BeanDefinitionHolder(bd, proxiedBeanName), registry, true);
+            //BeanDefinitionReaderUtils.registerBeanDefinition(proxyHolder, registry);
+
+            result = proxyHolder.getBeanDefinition();
+        } else {
+            result = bd;
+        }
+
+
 
         return result;
 
